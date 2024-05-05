@@ -3,9 +3,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pageflipper2/shared_preferences.dart';
 import 'signuppage.dart';
 import 'userhomepage.dart';
-import 'adminhomepage.dart';
+import 'adminpages/adminhomepage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,40 +21,41 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _isPasswordVisible = false;
 
-  Future<void> _login() async {
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      final response = await http.post(
-        Uri.parse('http://192.168.0.193:3000/login'),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'username': _usernameController.text,
-          'password': _passwordController.text,
-        }),
-      );
+Future<void> _login() async {
+  setState(() {
+    _isLoading = true;
+  });
+  try {
+    final response = await http.post(
+      Uri.parse('http://$ip:3000/login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'email': _usernameController.text,  // Assuming you use the same controller for email
+        'password': _passwordController.text,
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['isAdmin']) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminHomePage()));
-        } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const UserHomePage()));
-        }
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['isAdmin']) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminHomePage()));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid credentials')));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const UserHomePage()));
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error connecting to server')));
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    } else {
+      final message = jsonDecode(response.body)['message'];
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to login: $message')));
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error connecting to server: $e')));
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
   }
+}
 
 @override
 Widget build(BuildContext context) {
@@ -64,7 +66,7 @@ Widget build(BuildContext context) {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/logo_text.png'), 
+                Image.asset('assets/logo_text.png'),
                 const SizedBox(height: 20),
                 Container(
                   height: 10,
@@ -79,7 +81,7 @@ Widget build(BuildContext context) {
                   child: TextField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
-                      labelText: 'Username',
+                      labelText: 'Email',
                       border: OutlineInputBorder(),
                     ),
                   ),

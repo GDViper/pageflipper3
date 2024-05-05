@@ -1,28 +1,80 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pageflipper2/themeprovider.dart';
-import 'package:provider/provider.dart';
+import 'package:pageflipper2/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'loginpage.dart';
 import 'signuppage.dart';
 
-void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
-      child: const MyApp(initialTheme: ThemeMode.system,),
-    ),
-  );
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SettingsManager.initialize();
+  String themeModeString = SettingsManager.getThemeMode() ?? 'system';
+
+  ThemeMode initialTheme;
+  switch (themeModeString) {
+    case 'dark':
+      initialTheme = ThemeMode.dark;
+      break;
+    case 'light':
+      initialTheme = ThemeMode.light;
+      break;
+    default:
+      initialTheme = ThemeMode.system;
+      break;
+  }
+  runApp(MyApp(initialTheme: initialTheme));
+}
+
+class PermissionsDeniedApp extends StatelessWidget {
+  const PermissionsDeniedApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text("Storage permission is required to use this app."),
+              ElevatedButton(
+                onPressed: () {
+                  openAppSettings(); // Open app settings to let the user grant permission
+                },
+                child: const Text("Open Settings"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<bool> requestPermissions() async {
+  print("Requesting Storage Permission");
+  var status = await Permission.storage.status;
+  print("Current Storage Permission Status: ${status.isGranted}");
+
+  if (!status.isGranted) {
+    status = await Permission.storage.request();
+    print("Storage Permission Status After Request: ${status.isGranted}");
+  }
+  
+  return status.isGranted;
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.initialTheme});
   final ThemeMode initialTheme;
 
-  static final ValueNotifier<ThemeMode> themeNotifier =
-      ValueNotifier(ThemeMode.system);
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
   @override
   Widget build(BuildContext context) {
+    themeNotifier.value = initialTheme; // Set the initial theme mode
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, ThemeMode currentMode, __) {
@@ -30,15 +82,6 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             primarySwatch: Colors.purple,
             brightness: Brightness.light,
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black, backgroundColor: Colors.white,
-                shadowColor: Colors.grey,
-                elevation: 10,
-                shape: const RoundedRectangleBorder(
-                ),
-              ),
-            ),
           ),
           darkTheme: ThemeData(
             primarySwatch: Colors.purple,
@@ -107,17 +150,18 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(
         actions: [
           IconButton(
             icon: const Icon(Icons.dark_mode),
             onPressed: () {
+              bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+              String newThemeMode = isDarkMode ? "light" : "dark";
               MyApp.themeNotifier.value = isDarkMode ? ThemeMode.light : ThemeMode.dark;
+              SettingsManager.setThemeMode(newThemeMode);
             },
-          ),
+          )
         ],
       ),
       body: SafeArea(

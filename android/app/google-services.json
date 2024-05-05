@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "142135567534",
+    "project_id": "pageflipper2",
+    "storage_bucket": "pageflipper2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142135567534:android:1d7d4ce0ce52c7e97a393f",
+        "android_client_info": {
+          "package_name": "com.example.pageflipper2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUgVsNZgtSphaU8uMfWcNTThyo7tXwNrE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

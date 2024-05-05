@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pageflipper2/shared_preferences.dart';
 import 'loginpage.dart';
 import 'userhomepage.dart';
 
@@ -30,10 +31,10 @@ Future<void> _signUp() async {
   setState(() {
     _isLoading = true;
   });
-  
+
   try {
     final response = await http.post(
-      Uri.parse('http://192.168.0.193:3000/signup'),
+      Uri.parse('http://$ip:3000/signup'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -42,21 +43,23 @@ Future<void> _signUp() async {
         'username': _usernameController.text,
         'password': _passwordController.text,
       }),
-    );
+    ).timeout(const Duration(seconds: 10));  // Adding a timeout
 
     if (response.statusCode == 201) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const UserHomePage()));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to create account: ${response.body}')));
+      final errorMessage = jsonDecode(response.body)['message'] ?? 'Unknown error';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to create account: $errorMessage')));
     }
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error connecting to server')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error connecting to server: $e')));
   } finally {
     setState(() {
       _isLoading = false;
     });
   }
 }
+
 
 bool _validateEmail(String email) {
   if (!email.contains('.')) {
