@@ -3,8 +3,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pageflipper2/adminpages/addbook.dart';
-import 'package:pageflipper2/shared_preferences.dart';
+import 'package:pageflipper3/adminpages/addbook.dart';
+import 'package:pageflipper3/shared_preferences.dart';
 
 class AdminStorePage extends StatefulWidget {
   const AdminStorePage({super.key});

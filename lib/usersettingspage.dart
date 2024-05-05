@@ -1,8 +1,8 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-import 'package:pageflipper2/shared_preferences.dart';
-import 'package:pageflipper2/userhomepage.dart';
+import 'package:pageflipper3/shared_preferences.dart';
+import 'package:pageflipper3/userhomepage.dart';
 import '../changepassword.dart';
 import '../main.dart';
 

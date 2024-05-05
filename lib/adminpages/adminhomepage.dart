@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pageflipper2/adminpages/adminsettingspage.dart';
-import 'package:pageflipper2/adminpages/adminstorepage.dart';
-import 'package:pageflipper2/adminpages/fileuploader.dart';
+import 'package:pageflipper3/adminpages/adminsettingspage.dart';
+import 'package:pageflipper3/adminpages/adminstorepage.dart';
+import 'package:pageflipper3/adminpages/fileuploader.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});

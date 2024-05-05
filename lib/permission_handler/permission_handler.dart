@@ -1,25 +1,23 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 
-import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<bool> requestStoragePermission(Permission permission) async {
-  AndroidDeviceInfo build = await DeviceInfoPlugin().androidInfo;
-  if (build.version.sdkInt>=30) {
+  if (Platform.isAndroid && int.parse(Platform.operatingSystemVersion.split(" ")[1]) >= 30) {
     var result = await Permission.manageExternalStorage.request();
     if (result.isGranted) {
       return true;
     } else {
       return false;
     }
-  }
-  else {
+  } else {
     if (await permission.isGranted) {
       return true;
     } else {
       var result = await permission.request();
-      if(result.isGranted) {
+      if (result.isGranted) {
         return true;
       } else {
         return false;
@@ -28,8 +26,11 @@ Future<bool> requestStoragePermission(Permission permission) async {
   }
 }
 
-class PermissionHandlerUtil {
-  
+class PermissionHandlerUtil extends StatelessWidget {
+  const PermissionHandlerUtil({super.key});
+
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Storage Permission'),),
@@ -40,7 +41,7 @@ class PermissionHandlerUtil {
           print('Permission Denied');
         }
       },
-      child: Text('Click')),),
+      child: Text('Request Permission'))),
     );
   }
 
@@ -50,6 +51,6 @@ class PermissionHandlerUtil {
   }
 
   static Future<void> openAppSettings() async {
-    await PermissionHandlerUtil.openAppSettings();
+    await openAppSettings();
   }
 }

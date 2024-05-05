@@ -1,21 +1,40 @@
 {
   "project_info": {
-    "project_number": "142135567534",
-    "project_id": "pageflipper2",
-    "storage_bucket": "pageflipper2.appspot.com"
+    "project_number": "986200647692",
+    "project_id": "pageflipper3",
+    "storage_bucket": "pageflipper3.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:142135567534:android:1d7d4ce0ce52c7e97a393f",
+        "mobilesdk_app_id": "1:986200647692:android:20db4a69ee310b0655e629",
         "android_client_info": {
-          "package_name": "com.example.pageflipper2"
+          "package_name": "com.example.pageflipper3"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAUgVsNZgtSphaU8uMfWcNTThyo7tXwNrE"
+          "current_key": "AIzaSyDOjlQtsQq9B-uklHyAnHZtQ36Xyx-EkRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986200647692:android:d7fa4fa2a48acf3555e629",
+        "android_client_info": {
+          "package_name": "com.example.test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOjlQtsQq9B-uklHyAnHZtQ36Xyx-EkRs"
         }
       ],
       "services": {

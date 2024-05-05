@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:pageflipper2/shared_preferences.dart';
+import 'package:pageflipper3/shared_preferences.dart';
 import 'package:path/path.dart';
 
 void main() {

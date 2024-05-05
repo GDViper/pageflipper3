@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-const ip = '192.168.0.193';
+const ip = '192.168.0.103';
 
 class SettingsManager {
   static SharedPreferences? _preferences;
