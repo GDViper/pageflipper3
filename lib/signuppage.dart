@@ -1,9 +1,10 @@
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, depend_on_referenced_packages
 
-import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pageflipper3/shared_preferences.dart';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
 import 'loginpage.dart';
 import 'userhomepage.dart';
 
@@ -33,22 +34,58 @@ Future<void> _signUp() async {
   });
 
   try {
+    QuerySnapshot emailSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: _emailController.text)
+        .get();
+
+    QuerySnapshot usernameSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: _usernameController.text)
+        .get();
+
+    if (emailSnapshot.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email already exists')));
+      return;
+    }
+
+    if (usernameSnapshot.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Username already exists')));
+      return;
+    }
+
+    // Hash the email, username, and password
+    String hashedEmail = hashInput(_emailController.text);
+    String hashedUsername = hashInput(_usernameController.text);
+    String hashedPassword = hashInput(_passwordController.text);
+
     final response = await http.post(
-      Uri.parse('http://$ip:3000/signup'),
+      Uri.parse('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDOjlQtsQq9B-uklHyAnHZtQ36Xyx-EkRs'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
         'email': _emailController.text,
-        'username': _usernameController.text,
         'password': _passwordController.text,
+        'returnSecureToken': true,
       }),
-    ).timeout(const Duration(seconds: 10));  // Adding a timeout
+    ).timeout(const Duration(seconds: 10));
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      final userId = responseData['localId'];
+
+      await FirebaseFirestore.instance.collection('users').doc(userId).set({
+        'email': hashedEmail,
+        'username': hashedUsername,
+        'password': hashedPassword,
+        'admin': false,
+        'balance': 50,
+      });
+      
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const UserHomePage()));
     } else {
-      final errorMessage = jsonDecode(response.body)['message'] ?? 'Unknown error';
+      final errorMessage = jsonDecode(response.body)['error']['message'] ?? 'Unknown error';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to create account: $errorMessage')));
     }
   } catch (e) {
@@ -60,6 +97,9 @@ Future<void> _signUp() async {
   }
 }
 
+String hashInput(String input) {
+  return sha256.convert(utf8.encode(input)).toString();
+}
 
 bool _validateEmail(String email) {
   if (!email.contains('.')) {

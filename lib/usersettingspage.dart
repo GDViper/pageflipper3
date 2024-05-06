@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:pageflipper3/shared_preferences.dart';
 import 'package:pageflipper3/userhomepage.dart';
-import '../changepassword.dart';
 import '../main.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -33,13 +32,6 @@ class SettingsPage extends StatelessWidget {
               String newThemeMode = isDarkMode ? "light" : "dark";
               MyApp.themeNotifier.value = isDarkMode ? ThemeMode.light : ThemeMode.dark;
               SettingsManager.setThemeMode(newThemeMode);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.lock),
-            title: const Text('Change Password'),
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePassword()));
             },
           ),
           ListTile(

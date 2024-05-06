@@ -6,33 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pageflipper3/adminpages/addbook.dart';
 import 'package:pageflipper3/adminpages/adminhomepage.dart';
+import 'package:pageflipper3/adminpages/adminmanagepreview.dart';
+import 'package:pageflipper3/adminpages/adminstorepage.dart';
 import 'package:pageflipper3/adminpages/adminstorepreview.dart';
-import 'package:pageflipper3/adminpages/managepurchases.dart';
 import 'package:pageflipper3/adminpages/managestore.dart';
 import 'package:pageflipper3/shared_preferences.dart';
 
-class AdminStorePage extends StatefulWidget {
-  const AdminStorePage({super.key});
+class ManagePurchasePage extends StatefulWidget {
+  const ManagePurchasePage({super.key});
 
   @override
-  State<AdminStorePage> createState() => _AdminStorePageState();
+  State<ManagePurchasePage> createState() => _ManagePurchasePageState();
 }
 
-class _AdminStorePageState extends State<AdminStorePage> {
+class _ManagePurchasePageState extends State<ManagePurchasePage> {
   List<dynamic> files = [];
-  List<String> selectedGenres = [];
-  List<String> genres = [
-    'Literary Fiction',
-    'Science Fiction (Sci-Fi)',
-    'Fantasy',
-    'Nonfiction',
-    'Thriller',
-    'Horror',
-    'Romance',
-    'Historical Fiction',
-    'Adventure',
-  ];
-  bool showGenres = false;
   String? isbn;
 
   @override
@@ -42,26 +30,9 @@ class _AdminStorePageState extends State<AdminStorePage> {
   }
 
   Future<void> fetchFiles() async {
-    try {
-      CollectionReference filesRef = FirebaseFirestore.instance.collection('books');
-      QuerySnapshot querySnapshot = await filesRef.get();
-      List<DocumentSnapshot> allFiles = querySnapshot.docs;
-
-      List<DocumentSnapshot> filteredFiles = allFiles.where((file) {
-        Map<String, dynamic>? data = file.data() as Map<String, dynamic>?;
-        if (data == null) return false;
-
-        bool genreMatch = selectedGenres.isEmpty || selectedGenres.contains(data['genre']);
-
-        return genreMatch;
-      }).toList();
-
-      setState(() {
-        files = filteredFiles;
-      });
-    } catch (e) {
-      print('Error fetching files: $e');
-    }
+    final querySnapshot = await FirebaseFirestore.instance.collection('purchases').get();
+    files = querySnapshot.docs.map((doc) => doc.data()).toList();
+    setState(() {});
   }
 
   @override
@@ -71,14 +42,7 @@ class _AdminStorePageState extends State<AdminStorePage> {
         title: Image.asset('assets/text.png', width: 300),
         centerTitle: true,
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.filter_alt_outlined),
-            onPressed: () {
-              setState(() {
-                showGenres = !showGenres;
-              });
-            },
-          ),
+          Container(),
         ],
       ),
       drawer: Drawer(
@@ -117,6 +81,9 @@ class _AdminStorePageState extends State<AdminStorePage> {
               ),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const AdminStorePage()),
+                );
               },
             ),
             ListTile(
@@ -183,101 +150,46 @@ class _AdminStorePageState extends State<AdminStorePage> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const ManagePurchasePage()),
-                );
               },
             ),
           ],
         ),
       ),
       body: Column(
-  children: [
-    if (showGenres)
-      Row(
-        children: [
-          DropdownButton<String>(
-            items: genres.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (newValue) {
-              setState(() {
-                if (selectedGenres.contains(newValue)) {
-                  selectedGenres.remove(newValue);
-                } else {
-                  selectedGenres.add(newValue!);
-                }
-                fetchFiles();
-              });
-            },
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                selectedGenres.clear();
-                fetchFiles();
-              });
-            },
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
-      Expanded(
-        child: files.isEmpty
-          ? const Center(child: Text('No files available.'))
-          : ListView.builder(
-              itemCount: files.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  color: Colors.purple,
-                  child: TextButton(
-                    onPressed: () async {
-                      String? isbn = files[index]['isbn'];
-                      if (isbn != null) {
-                        await SettingsManager.setIsbn(isbn);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => AdminStorePreview(isbn: isbn)));
-                      }
-                    },
-                    child: ListTile(
-                      title: Text(files[index]['title']),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${files[index]['authors']}'),
-                          Text('ISBN: ${files[index]['isbn']}'),
-                          Text('Genre: ${files[index]['genre']}'),
-                          Text('Price: ${files[index]['price'].toString()}'),
-                        ],
+            children: [
+              Expanded(
+                child: files.isEmpty
+                  ? const Center(child: Text('No files available.'))
+                  : ListView.builder(
+                  itemCount: files.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      color: Colors.purple,
+                      child: TextButton(
+                        onPressed: () async {
+                          String? isbn = files[index]['isbn'];
+                          if (isbn != null) {
+                            await SettingsManager.setIsbn(isbn);
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => AdminManagePreview(isbn: isbn)));
+                          }
+                        },
+                        child: ListTile(
+                          title: Text(files[index]['email']),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('ISBN: ${files[index]['isbn']}'),
+                              Text('Datetime: ${files[index]['datetime'].toString()}'),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          )
-        ]
+                    );
+                  },
+                ),
+              ),
+            ]
       ),
-      bottomNavigationBar: BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.library_books),
-          label: 'Library',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.schedule),
-          label: 'Schedule',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.store),
-          label: 'Store',
-        ),
-      ],
-      selectedItemColor: Colors.purple,
-      unselectedItemColor: Colors.purple,
-      )
     );
   }
 }

@@ -44,7 +44,7 @@ class PermissionsDeniedApp extends StatelessWidget {
               const Text("Storage permission is required to use this app."),
               ElevatedButton(
                 onPressed: () {
-                  openAppSettings(); // Open app settings to let the user grant permission
+                  openAppSettings();
                 },
                 child: const Text("Open Settings"),
               ),
@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    themeNotifier.value = initialTheme; // Set the initial theme mode
+    themeNotifier.value = initialTheme;
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, ThemeMode currentMode, __) {

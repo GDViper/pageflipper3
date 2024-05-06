@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 
-import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<bool> requestStoragePermission(Permission permission) async {
-  if (Platform.isAndroid && int.parse(Platform.operatingSystemVersion.split(" ")[1]) >= 30) {
+  AndroidDeviceInfo build = await DeviceInfoPlugin().androidInfo;
+  if (build.version.sdkInt >= 30) {
     var result = await Permission.manageExternalStorage.request();
     if (result.isGranted) {
       return true;

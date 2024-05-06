@@ -1,8 +1,9 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pageflipper3/shared_preferences.dart';
 import 'signuppage.dart';
 import 'userhomepage.dart';
@@ -16,7 +17,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
@@ -25,36 +26,44 @@ Future<void> _login() async {
   setState(() {
     _isLoading = true;
   });
-  try {
-    final response = await http.post(
-      Uri.parse('http://$ip:3000/login'),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'email': _usernameController.text,  // Assuming you use the same controller for email
-        'password': _passwordController.text,
-      }),
-    );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data['isAdmin']) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminHomePage()));
+  try {
+    String hashedEmail = hashInput(_emailController.text);
+    String hashedPassword = hashInput(_passwordController.text);
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: hashedEmail)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      var userData = querySnapshot.docs.first.data();
+      bool passwordsMatch = userData != null && (userData as Map<String, dynamic>)['password'] == hashedPassword;
+      if (passwordsMatch) {
+        bool isAdmin = (userData)['admin'];
+        await SettingsManager.setEmail(hashedEmail);
+        if (isAdmin) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminHomePage()));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const UserHomePage()));
+        }
       } else {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const UserHomePage()));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid credentials')));
       }
     } else {
-      final message = jsonDecode(response.body)['message'];
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to login: $message')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not found')));
     }
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error connecting to server: $e')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
   } finally {
     setState(() {
       _isLoading = false;
     });
   }
+}
+
+String hashInput(String input) {
+  return sha256.convert(utf8.encode(input)).toString();
 }
 
 @override
@@ -79,7 +88,7 @@ Widget build(BuildContext context) {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: TextField(
-                    controller: _usernameController,
+                    controller: _emailController,
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder(),

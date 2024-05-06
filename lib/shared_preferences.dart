@@ -6,7 +6,8 @@ class SettingsManager {
   static SharedPreferences? _preferences;
 
   static const _keyThemeMode = 'themeMode';
-  static const _keyUsername = 'username';
+  static const _keyEmail = 'email';
+  static const _keyIsbn = 'isbn';
 
   static Future initialize() async {
     _preferences = await SharedPreferences.getInstance();
@@ -20,11 +21,19 @@ class SettingsManager {
     return _preferences?.getString(_keyThemeMode) ?? 'system';
   }
 
-  static Future setUsername(String username) async {
-    await _preferences?.setString(_keyUsername, username);
+  static Future setEmail(String email) async {
+    await _preferences?.setString(_keyEmail, email);
   }
 
-  static String? getUsername() {
-    return _preferences?.getString(_keyUsername);
+  static String? getEmail() {
+    return _preferences?.getString(_keyEmail);
+  }
+
+  static Future setIsbn(String isbn) async {
+    await _preferences?.setString(_keyIsbn, isbn);
+  }
+
+  static String? getIsbn() {
+    return _preferences?.getString(_keyIsbn);
   }
 }
