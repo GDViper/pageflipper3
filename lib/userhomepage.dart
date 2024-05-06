@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pageflipper3/userlibrary.dart';
 import 'package:pageflipper3/usersettingspage.dart';
+import 'package:pageflipper3/userstorepage.dart';
 
 class UserHomePage extends StatelessWidget {
   const UserHomePage({super.key});
@@ -29,7 +31,12 @@ class UserHomePage extends StatelessWidget {
               decoration: const BoxDecoration(
                 color: Colors.purple,
               ),
-              child: Image.asset('assets/logo.png'),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Image.asset('assets/logo.png'),
+              ),
             ),
             Image.asset('assets/text.png'),
             
@@ -70,7 +77,9 @@ class UserHomePage extends StatelessWidget {
                 child: const Text('Store page'),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const UserStorePage()),
+                );
               },
             ),
             ListTile(
@@ -123,6 +132,28 @@ class UserHomePage extends StatelessWidget {
             label: 'Store',
           ),
         ],
+        onTap: (index) {
+        if (index == 0) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const UserLibrary()),
+          );
+        }
+        (index);
+          if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const UserStorePage()),
+            );
+          }
+          (index);
+          if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const UserStorePage()),
+            );
+          }
+        },
         selectedItemColor: Colors.purple,
         unselectedItemColor: Colors.purple,
       )
