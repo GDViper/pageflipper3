@@ -41,3 +41,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/app/pageflipper2-firebase-adminsdk-5xi43-ff69a42908.json
+
