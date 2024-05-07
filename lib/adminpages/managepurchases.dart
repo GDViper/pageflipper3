@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:pageflipper3/adminpages/addbook.dart';
 import 'package:pageflipper3/adminpages/adminhomepage.dart';
 import 'package:pageflipper3/adminpages/adminmanagepreview.dart';
@@ -156,40 +157,35 @@ class _ManagePurchasePageState extends State<ManagePurchasePage> {
         ),
       ),
       body: Column(
-            children: [
-              Expanded(
-                child: files.isEmpty
-                  ? const Center(child: Text('No files available.'))
-                  : ListView.builder(
-                  itemCount: files.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      color: Colors.purple,
-                      child: TextButton(
-                        onPressed: () async {
-                          String? isbn = files[index]['isbn'];
-                          if (isbn != null) {
-                            await SettingsManager.setIsbn(isbn);
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => AdminManagePreview(isbn: isbn)));
-                          }
-                        },
-                        child: ListTile(
-                          title: Text(files[index]['email']),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('ISBN: ${files[index]['isbn']}'),
-                              Text('Datetime: ${files[index]['datetime'].toString()}'),
-                            ],
-                          ),
-                        ),
+        children: [
+          Expanded(
+            child: files.isEmpty
+              ? const Center(child: Text('No files available.'))
+              : ListView.builder(
+                itemCount: files.length,
+                itemBuilder: (context, index) {
+                  Timestamp timestamp = files[index]['datetime'];
+                  DateTime dateTime = timestamp.toDate();
+                  String formattedDateTime = DateFormat('yyyy-MM-dd – kk:mm').format(dateTime);
+
+                  return Card(
+                    color: Colors.purple,
+                    child: ListTile(
+                      title: Text(files[index]['email']),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('ISBN: ${files[index]['isbn']}'),
+                          Text('Datetime: $formattedDateTime'),
+                        ],
                       ),
-                    );
-                  },
-                ),
-              ),
-            ]
-      ),
+                    ),
+                  );
+                },
+              )
+          ),
+        ],
+      )
     );
   }
 }

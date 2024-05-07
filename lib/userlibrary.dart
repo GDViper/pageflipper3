@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pageflipper3/schedule.dart';
 import 'package:pageflipper3/shared_preferences.dart';
 import 'package:pageflipper3/userhomepage.dart';
 import 'package:pageflipper3/userstorepage.dart';
@@ -32,6 +33,7 @@ class _UserLibraryState extends State<UserLibrary> {
   ];
   bool showGenres = false;
   String? isbn;
+  String? email = SettingsManager.getEmail();
 
   @override
   void initState() {
@@ -41,6 +43,10 @@ class _UserLibraryState extends State<UserLibrary> {
 
   Future<void> fetchFiles() async {
     try {
+      QuerySnapshot userQuery = await FirebaseFirestore.instance.collection('users').where('email', isEqualTo: email).get();
+      DocumentSnapshot userDoc = userQuery.docs.first;
+      List<String> owned = List<String>.from(userDoc['owned'].map((item) => item.toString()));
+
       CollectionReference filesRef = FirebaseFirestore.instance.collection('books');
       QuerySnapshot querySnapshot = await filesRef.get();
       List<DocumentSnapshot> allFiles = querySnapshot.docs;
@@ -49,9 +55,11 @@ class _UserLibraryState extends State<UserLibrary> {
         Map<String, dynamic>? data = file.data() as Map<String, dynamic>?;
         if (data == null) return false;
 
+        bool ownedMatch = owned.contains(data['isbn']);
+
         bool genreMatch = selectedGenres.isEmpty || selectedGenres.contains(data['genre']);
 
-        return genreMatch;
+        return genreMatch && ownedMatch;
       }).toList();
 
       setState(() {
@@ -61,6 +69,7 @@ class _UserLibraryState extends State<UserLibrary> {
       print('Error fetching files: $e');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +146,9 @@ class _UserLibraryState extends State<UserLibrary> {
               ),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const UserStorePage()),
+                );
               },
             ),
             ListTile(
@@ -157,6 +169,9 @@ class _UserLibraryState extends State<UserLibrary> {
               ),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const SchedulePage()),
+                );
               },
             ),
           ],
@@ -250,7 +265,7 @@ class _UserLibraryState extends State<UserLibrary> {
         if (index == 1) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const UserStorePage()),
+            MaterialPageRoute(builder: (context) => const SchedulePage()),
           );
         }
       (index);

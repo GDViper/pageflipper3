@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pageflipper3/schedule.dart';
 import 'package:pageflipper3/shared_preferences.dart';
 import 'package:pageflipper3/userhomepage.dart';
 import 'package:pageflipper3/userlibrary.dart';
@@ -117,6 +118,10 @@ class _UserStorePageState extends State<UserStorePage> {
               ),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UserLibrary()),
+                );
               },
             ),
             ListTile(
@@ -137,9 +142,6 @@ class _UserStorePageState extends State<UserStorePage> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const UserStorePage()),
-                );
               },
             ),
             ListTile(
@@ -160,7 +162,9 @@ class _UserStorePageState extends State<UserStorePage> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                
+                Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const SchedulePage()),
+                );
               },
             ),
           ],
@@ -261,7 +265,7 @@ class _UserStorePageState extends State<UserStorePage> {
         if (index == 1) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const UserStorePage()),
+            MaterialPageRoute(builder: (context) => const SchedulePage()),
           );
         }
       },

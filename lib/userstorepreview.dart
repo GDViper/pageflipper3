@@ -1,11 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print, unnecessary_string_interpolations
 
 import 'dart:typed_data';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:pageflipper3/book.dart';
 import 'package:pageflipper3/adminpages/adminsettingspage.dart';
+import 'package:pageflipper3/pdfviewpage.dart';
 import 'package:pageflipper3/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,6 +25,10 @@ class _UserStorePreviewState extends State<UserStorePreview> {
   String? email = SettingsManager.getEmail();
   String? isbn = SettingsManager.getIsbn();
   bool loading = false;
+
+  DateTime getCurrentDateTime() {
+    return DateTime.now();
+  }
     
   @override
   void initState() {
@@ -64,6 +70,13 @@ class _UserStorePreviewState extends State<UserStorePreview> {
     throw Exception('Failed to download PDF');
   }
 
+  String getDateTime() {
+    var now = DateTime.now();
+    var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+    String formattedDate = formatter.format(now);
+    return formattedDate;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,63 +112,27 @@ class _UserStorePreviewState extends State<UserStorePreview> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Genre: ${snapshot.data!.genre}', style: const TextStyle(fontSize: 20)),
-                      Text('Price: ${snapshot.data!.price.toString()}', style: const TextStyle(fontSize: 20)),
                     ],
                   ),
                   const Spacer(),
-                  FutureBuilder<QuerySnapshot>(
-                    future: FirebaseFirestore.instance.collection('users').where('email', isEqualTo: email).get(),
-                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (snapshot.hasError) {
-                        return const Text("Something went wrong");
-                      }
-
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                          Map<String, dynamic> data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
-                          return Text("Balance: ${data['balance']}", style: const TextStyle(fontSize: 20));
-                        } else {
-                          return const Text("User not found");
-                        }
-                      }
-
-                      return const Text("loading");
-                    },
-                  ),
                   Center(
-                    child: loading ? const CircularProgressIndicator() : _buildButton(context, 'Buy', () async {
+                    child: loading ? const CircularProgressIndicator() : _buildButton(context, 'Read', () async {
                         setState(() {
                           loading = true;
                         });
-                        if (email != null) {
-                          var userQuery = await FirebaseFirestore.instance.collection('users').where('email', isEqualTo: email).get();
-                          if (userQuery.docs.isNotEmpty) {
-                            var userDoc = userQuery.docs.first;
-                            var userData = userDoc.data();
-                            double balance = (userData['balance'] as num).toDouble();
-                            Book book = await futureBook;
-                            List<String> owned = List<String>.from(userData['owned'].map((item) => item.toString()));
-                            if (!owned.contains(isbn)) {
-                              if (book.price <= balance) {
-                                await userDoc.reference.update({'balance': balance - book.price});
-                                owned.add(isbn!);
-                                await userDoc.reference.update({'owned': owned});
-                                print('Purchase successful');
-                              } else {
-                                print('Insufficient balance');
-                              }
-                            } else {
-                              print('You already own this book');
-                            }
-                                                    } else {
-                            print('User not found');
-                          }
-                        } else {
-                          print('Email is null');
+                        try {
+                          final pdfBytes = await fetchPdf(widget.isbn);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PdfViewPage(pdfBytes: pdfBytes)),
+                          );
+                        } catch (e) {
+                          print('An error occurred while trying to fetch the PDF: $e');
+                        } finally {
+                          setState(() {
+                            loading = false;
+                          });
                         }
-                        setState(() {
-                          loading = false;
-                        });
                       },
                     ),
                   )

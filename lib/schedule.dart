@@ -1,28 +1,30 @@
-import 'package:flutter/material.dart';
-import 'package:pageflipper3/schedule.dart';
-import 'package:pageflipper3/userlibrary.dart';
-import 'package:pageflipper3/usersettingspage.dart';
-import 'package:pageflipper3/userstorepage.dart';
+// ignore_for_file: avoid_print, unused_import, use_build_context_synchronously
 
-class UserHomePage extends StatelessWidget {
-  const UserHomePage({super.key});
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:pageflipper3/shared_preferences.dart';
+import 'package:pageflipper3/userhomepage.dart';
+import 'package:pageflipper3/userlibrary.dart';
+import 'package:pageflipper3/userstorepage.dart';
+import 'package:pageflipper3/userstorepreview.dart';
+
+class SchedulePage extends StatefulWidget {
+  const SchedulePage({super.key});
+
+  @override
+  State<SchedulePage> createState() => _SchedulePageState();
+}
+
+class _SchedulePageState extends State<SchedulePage> {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset('assets/text.png'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
-              );
-            },
-          ),
-        ],
+        title: Image.asset('assets/text.png', width: 300),
+        centerTitle: true,
       ),
       drawer: Drawer(
         child: ListView(
@@ -34,7 +36,10 @@ class UserHomePage extends StatelessWidget {
               ),
               child: GestureDetector(
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const UserHomePage()),
+                  );
                 },
                 child: Image.asset('assets/logo.png'),
               ),
@@ -59,9 +64,6 @@ class UserHomePage extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const UserLibrary()),
-                );
               },
             ),
             ListTile(
@@ -81,8 +83,9 @@ class UserHomePage extends StatelessWidget {
                 child: const Text('Store page'),
               ),
               onTap: () {
+                Navigator.pop(context);
                 Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const UserStorePage()),
+                  MaterialPageRoute(builder: (context) => const SchedulePage()),
                 );
               },
             ),
@@ -104,65 +107,46 @@ class UserHomePage extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const SchedulePage()),
-                );
+                
               },
             ),
-
           ],
         ),
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Welcome to the Home Page!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            )
-          ],
-        ),
+      body: const Column(
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.library_books),
-            label: 'Library',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.schedule),
-            label: 'Schedule',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.store),
-            label: 'Store',
-          ),
-        ],
-        onTap: (index) {
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.library_books),
+          label: 'Library',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.schedule),
+          label: 'Schedule',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.store),
+          label: 'Store',
+        ),
+      ],
+      onTap: (index) {
         if (index == 0) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const UserLibrary()),
           );
         }
-        (index);
-          if (index == 2) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const SchedulePage()),
-            );
-          }
-          (index);
-          if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const UserStorePage()),
-            );
-          }
-        },
-        selectedItemColor: Colors.purple,
-        unselectedItemColor: Colors.purple,
+      (index);
+        if (index == 2) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const UserStorePage()),
+          );
+        }
+      },
+      selectedItemColor: Colors.purple,
+      unselectedItemColor: Colors.purple,
       )
     );
   }
